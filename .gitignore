@@ -1,0 +1,36 @@
+# python virtual environment
+venv
+
+# build output
+ui/dist/
+
+# generated types
+ui/.astro/
+
+# dependencies
+ui/node_modules/
+
+# logs
+ui/npm-debug.log*
+ui/yarn-debug.log*
+ui/yarn-error.log*
+ui/pnpm-debug.log*
+
+# environment variables
+ui/.env
+ui/.env.production
+
+# macOS-specific files
+.DS_Store
+
+# IDE
+.idea
+.vscode
+*.iml
+*.ipr
+*.iws
+
+# Logs
+logs
+*.log
+
