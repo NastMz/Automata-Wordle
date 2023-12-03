@@ -1,0 +1,346 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HelpModal from '../components/HelpModal.astro';
+import GameOverModal from "../components/GameOverModal.astro";
+import Keyboard from "../components/Keyboard.astro";
+---
+<Layout title="Automata Wordle">
+    <header class="flex justify-center items-center">
+        <div class="w-fit flex items-center p-5 gap-5 border-b-2 border-gray-200 mb-10">
+            <h1 class="text-3xl uppercase font-bold">
+                Automata Wordle
+            </h1>
+            <button type="button" id="open-modal-btn"
+                    class="rounded-full w-[25px] h-[25px] border-2 border-gray-400 flex items-center justify-center p-1 text-gray-400 font-bold">
+                ?
+            </button>
+        </div>
+    </header>
+    <HelpModal/>
+    <GameOverModal
+            title="¡Felicidades! Has ganado el juego Wordle"
+            idModal="win-modal"
+            idContent="win-content"
+    >
+        <p class="text-base leading-relaxed text-gray-500">
+            ¡Eres un maestro de las palabras! Has adivinado la palabra correctamente y has demostrado tus habilidades
+            lingüísticas. ¡Excelente trabajo!
+        </p>
+    </GameOverModal>
+    <GameOverModal
+            title="¡Oh no! Has agotado todos tus intentos"
+            idModal="lose-modal"
+            idContent="lose-content"
+    >
+        <p class="text-base leading-relaxed text-gray-500">
+            <strong>Palabra Oculta:</strong> <span id="answer"></span>
+        </p>
+        <p class="text-base leading-relaxed text-gray-500">
+            No te desanimes, ¡inténtalo de nuevo! La próxima vez puedes descifrar la palabra oculta con menos intentos.
+            ¡Sigue intentándolo!
+        </p>
+    </GameOverModal>
+    <main class="w-full flex flex-col items-center gap-20 pb-20">
+        <section id="board" class="grid grid-cols-5 gap-2">
+        </section>
+        <Keyboard/>
+    </main>
+</Layout>
+
+<style is:global>
+    @keyframes rotateY {
+        0% {
+            transform: rotateX(0deg);
+        }
+        100% {
+            transform: rotateX(360deg);
+        }
+    }
+
+    .rotate {
+        animation: rotateY 0.8s linear;
+        transform-style: preserve-3d;
+    }
+</style>
+
+<script is:inline>
+
+    /**
+     * Maximum number of columns in the game board.
+     * @type {number}
+     */
+    const MAX_COLS = 5;
+
+    /**
+     * Maximum number of rows in the game board.
+     * @type {number}
+     */
+    const MAX_ROWS = 6;
+
+    /**
+     * Start of the alphabet for the game.
+     * @type {string}
+     */
+    const ALPHABET_START = "a";
+
+    /**
+     * End of the alphabet for the game.
+     * @type {string}
+     */
+    const ALPHABET_END = "z";
+
+    /**
+     * Special character allowed in the game.
+     * @type {string}
+     */
+    const SPECIAL_CHARACTER = "ñ";
+
+    /**
+     * Key code for the backspace key.
+     * @type {string}
+     */
+    const BACKSPACE_KEY = "Backspace";
+
+    /**
+     * Key code for the enter key.
+     * @type {string}
+     */
+    const ENTER_KEY = "Enter";
+
+    /**
+     * Current row in the game board.
+     * @type {number}
+     */
+    let currentRow = 0;
+
+    /**
+     * Current column in the game board.
+     * @type {number}
+     */
+    let currentCol = 0;
+
+    /**
+     * Game over status.
+     * @type {boolean}
+     */
+    let gameOver = false;
+
+    /**
+     * Word to guess in the game.
+     * @type {string}
+     */
+    let word = "Ayuda";
+
+    /**
+     * Game board element.
+     * @type {HTMLElement}
+     */
+    let gameBoard = document.getElementById("board");
+
+    /**
+     * Initialize the game board on window load.
+     */
+    window.onload = function () {
+        initialize();
+    };
+
+    /**
+     * Initialize the game board.
+     */
+    function initialize() {
+        // Create game board tiles and add them to the game board element
+        for (let r = 0; r < MAX_ROWS; r++) {
+            for (let c = 0; c < MAX_COLS; c++) {
+                let tile = document.createElement("div");
+
+                tile.classList.add("flex", "items-center", "justify-center", "h-[50px]", "w-[50px]", "border", "border-gray-200", "rounded-lg", "shadow");
+
+                let tileChild = document.createElement("span");
+
+                tileChild.classList.add("text-2xl", "font-bold", "tracking-tight", "text-gray-900");
+
+                tileChild.id = getTileId(r, c);
+
+                tile.appendChild(tileChild);
+
+                gameBoard.appendChild(tile);
+            }
+        }
+    }
+
+    /**
+     * Get the ID of a tile.
+     * @param {number} row - The row of the tile.
+     * @param {number} col - The column of the tile.
+     * @returns {string} The ID of the tile.
+     */
+    function getTileId(row, col) {
+        return row.toString() + "-" + col.toString();
+    }
+
+    // Listen for key press
+    document.addEventListener("keyup", (evt) => {
+        // If the game is over, don't do anything.
+        if (gameOver) {
+            return;
+        }
+
+        // If the key pressed is a letter or the special character, add it to the current tile in the game board
+        if ((ALPHABET_START <= evt.key && evt.key <= ALPHABET_END) || evt.key === SPECIAL_CHARACTER) {
+            // If the current column is less than the maximum number of columns, add the letter to the current tile
+            // and move to the next column in the game board (if possible)
+            if (currentCol < MAX_COLS) {
+                let currentTileId = getTileId(currentRow, currentCol);
+                let currentTile = document.getElementById(currentTileId);
+
+                if (currentTile.innerText === "") {
+                    currentTile.textContent = evt.key.toUpperCase();
+                    currentCol++;
+                }
+            }
+        }
+        // If the key pressed is the backspace key, delete the letter in the current tile in the game board
+        else if (evt.key === BACKSPACE_KEY) {
+
+            if (currentCol > 0 && currentCol <= MAX_COLS) {
+                currentCol--;
+            }
+
+            let currentTileId = getTileId(currentRow, currentCol);
+            let currentTile = document.getElementById(currentTileId);
+
+            currentTile.textContent = "";
+
+        }
+        // If the key pressed is the enter key, update the game state and move to the next row in the game board (if possible)
+        else if (evt.key === ENTER_KEY && currentCol === MAX_COLS) {
+            update();
+            currentRow++;
+            currentCol = 0;
+        }
+
+        // If the current row is the last row and the game is not over, the player has lost the game
+        if (!gameOver && currentRow === MAX_ROWS) {
+            gameOver = true;
+            setTimeout(() => {
+                document.getElementById("answer").innerText = word;
+
+                openModal("lose-modal", "lose-content");
+            }, 3000);
+        }
+    });
+
+    /**
+     * Update the game state.
+     */
+    function update() {
+        const allButtons = document.querySelectorAll('#keyboard div button'); // All buttons in the virtual keyboard
+
+        let correctAnswers = 0; // Number of correct answers
+
+        // Check each tile in the current row for correctness and color it accordingly
+        for (let c = 0; c < MAX_COLS; c++) {
+            let currentTileId = getTileId(currentRow, c); // Get the ID of the current tile
+            let currentTile = document.getElementById(currentTileId); // Get the current tile
+
+            let letter = currentTile.innerText.toUpperCase(); // Get the letter in the tile
+
+            let parentTile = currentTile.parentElement; // Get the parent of the tile (the div) to add the color class
+
+            let key = null; // The key in the keyboard to color accordingly
+
+            // Find the key in the keyboard that corresponds to the letter in the tile
+            allButtons.forEach(button => {
+                if (button.textContent.toUpperCase() === letter) {
+                    key = button;
+                }
+            });
+
+            // Rotate the tile to show the color depending on the correctness of the letter in the word to guess
+            // We need to wait for the previous tile to rotate before rotating the next one
+            setTimeout(() => {
+                parentTile.classList.add("rotate");
+
+                // Wait for the animation to finish before coloring the tile
+                setTimeout(() => {
+                    // Is it the correct letter in the word in the correct position?
+                    if (word.toUpperCase()[c] === letter) {
+                        let color = getColor("GOOD");
+                        parentTile.classList.add(color);
+                        correctAnswers++;
+
+                        if (key.classList.contains(getColor("CLUE"))) {
+                            key.classList.remove(getColor("CLUE"))
+                        } else if (key.classList.contains(getColor("BAD"))) {
+                            key.classList.remove(getColor("BAD"))
+                        }
+
+                        key.classList.add(color);
+                    }
+                    // Is a letter in the word but not in the correct position?
+                    else if (word.toUpperCase().includes(letter)) {
+                        let color = getColor("CLUE");
+                        parentTile.classList.add(color);
+                        if (!key.classList.contains(getColor("GOOD"))) {
+                            key.classList.add(color);
+                        }
+                    }
+                    // Isn't a letter in the word?
+                    else {
+                        let color = getColor("BAD");
+                        parentTile.classList.add(color);
+                        if (!key.classList.contains(getColor("GOOD"))) {
+                            key.classList.add(color);
+                        }
+                    }
+
+                    // Check if the game is over (all letters in the word have been guessed correctly) and show the win modal
+                    if (correctAnswers === MAX_COLS) {
+                        gameOver = true;
+                        // We need to wait for the last tile to rotate before showing the modal
+                        setTimeout(() => {
+                            openModal("win-modal", "win-content");
+                        }, 100);
+                    }
+                }, 500);
+            }, c * 500);
+        }
+    }
+
+    /**
+     * Get the color class for a given type.
+     * @param {string} type - The type of color.
+     * @returns {string} The color class.
+     */
+    function getColor(type) {
+        const colors = {
+            "NORMAL": "bg-white",
+            "CLUE": "bg-yellow-300",
+            "GOOD": "bg-green-400",
+            "BAD": "bg-gray-500"
+        };
+
+        return colors[type] ?? "";
+    }
+
+    /**
+     * Open a modal.
+     * @param {string} idModal - The ID of the modal.
+     * @param {string} idModalContent - The ID of the modal content.
+     */
+    function openModal(idModal, idModalContent) {
+        let modalElement = document.getElementById(idModal);
+        let modalContent = document.getElementById(idModalContent);
+
+        modalElement.classList.replace("hidden", "flex");
+
+        setTimeout(() => {
+            modalContent.classList.replace("scale-0", "scale-100");
+        }, 100);
+    }
+
+    // Event listeners for modals
+    document.getElementById("open-modal-btn").addEventListener("click", () => openModal("help-modal", "modal"));
+    document.getElementById("close-win-modal").addEventListener("click", () => location.reload());
+    document.getElementById("close-lose-modal").addEventListener("click", () => location.reload());
+</script>
