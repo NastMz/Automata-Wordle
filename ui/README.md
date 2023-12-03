@@ -11,4 +11,4 @@ Automata Wordle is a simple, fun, and engaging word guessing game inspired by th
 - The game ends when you have correctly guessed all the letters in the word or when you have exhausted all your attempts.
 
 ## Usage
-To play the game, is necessary to run both the backend and frontend services. See this [README](app/README.md) for more details.
+To play the game, is necessary to run both the backend and frontend services. See this [README](https://github.com/NastMz/Automata-Wordle/blob/main/README.md) for more details.
