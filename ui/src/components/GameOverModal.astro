@@ -1,0 +1,43 @@
+---
+/**
+ * Interface for the Props object.
+ * @interface
+ * @property {string} title - The title of the modal.
+ * @property {string} idModal - The id of the modal element.
+ * @property {string} idContent - The id of the modal content element.
+ */
+interface Props {
+    title: string;
+    idModal: string;
+    idContent: string;
+}
+
+// Destructure the title, idModal, and idContent properties from Astro.props
+const {title, idModal, idContent} = Astro.props;
+---
+<!-- Main modal -->
+<div id={idModal}
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 w-full h-full z-50 bg-black bg-opacity-60 items-center justify-center">
+    <div id={idContent} class="scale-0 relative p-4 w-full max-w-2xl max-h-full transition duration-300">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900 uppercase">
+                    {title}
+                </h3>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5 space-y-4">
+                <slot />
+            </div>
+            <!-- Modal footer -->
+            <div class="flex items-center justify-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button id={"close-" + idModal} type="button"
+                        class="text-white bg-green-500 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                    Jugar de nuevo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
