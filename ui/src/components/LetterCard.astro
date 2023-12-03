@@ -1,0 +1,44 @@
+---
+import type {Letter} from "../lib/types";
+
+/**
+ * Interface for the Props object.
+ * @interface
+ * @property {Letter} letter - The Letter object in the Props.
+ */
+interface Props {
+    letter: Letter;
+}
+
+// Destructure the letter property from Astro.props
+const {letter} = Astro.props;
+
+/**
+ * Type for the color types.
+ */
+type ColorType = "NORMAL" | "CLUE" | "GOOD" | "BAD";
+
+/**
+ * Function to get the color based on the type.
+ * @function
+ * @param {ColorType} type - The type of the color.
+ * @returns {string} The color class name.
+ */
+function getColor(type: ColorType): string {
+    // Define the color classes for each type
+    const colors: any = {
+        "NORMAL": "bg-white",
+        "CLUE": "bg-yellow-300",
+        "GOOD": "bg-green-400",
+        "BAD": "bg-gray-500"
+    };
+
+    // Return the color class for the given type, or an empty string if the type is not defined
+    return colors[type] ?? "";
+}
+
+---
+
+<div class={`flex items-center justify-center h-[50px] w-[50px] ${getColor(letter.type)} border border-gray-200 rounded-lg shadow`}>
+    <span class="text-2xl font-bold tracking-tight text-gray-900">{letter.letter}</span>
+</div>

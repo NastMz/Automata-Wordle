@@ -1,0 +1,17 @@
+---
+import LetterCard from "./LetterCard.astro";
+import type {Letter} from "../lib/types";
+
+interface Props {
+    letters: Letter[];
+}
+
+const {letters} = Astro.props;
+---
+<div class="flex gap-1">
+    {
+        letters.map((letter) => {
+            return <LetterCard letter={letter}/>
+        })
+    }
+</div>

@@ -1,0 +1,171 @@
+---
+import Row from "./Row.astro";
+import type {Letter} from "../lib/types";
+
+/**
+ * An array of Letter objects representing a good example for the game.
+ * Each Letter object has a letter and a type.
+ * The type "GOOD" means the letter is in the correct position.
+ * @type {Letter[]}
+ */
+const GOOD_EXAMPLE: Letter[] = [
+    {
+        letter: "A",
+        type: "GOOD",
+    },
+    {
+        letter: "Y",
+        type: "NORMAL",
+    },
+    {
+        letter: "U",
+        type: "NORMAL",
+    },
+    {
+        letter: "D",
+        type: "NORMAL",
+    },
+    {
+        letter: "A",
+        type: "NORMAL",
+    }
+];
+
+/**
+ * An array of Letter objects representing a clue example for the game.
+ * Each Letter object has a letter and a type.
+ * The type "CLUE" means the letter is in the word but not in the correct position.
+ * @type {Letter[]}
+ */
+const CLUE_EXAMPLE: Letter[] = [
+    {
+        letter: "C",
+        type: "NORMAL",
+    },
+    {
+        letter: "I",
+        type: "CLUE",
+    },
+    {
+        letter: "N",
+        type: "NORMAL",
+    },
+    {
+        letter: "C",
+        type: "NORMAL",
+    },
+    {
+        letter: "O",
+        type: "NORMAL",
+    }
+];
+
+/**
+ * An array of Letter objects representing a bad example for the game.
+ * Each Letter object has a letter and a type.
+ * The type "BAD" means the letter is not in the word.
+ * @type {Letter[]}
+ */
+const BAD_EXAMPLE: Letter[] = [
+    {
+        letter: "J",
+        type: "NORMAL",
+    },
+    {
+        letter: "U",
+        type: "NORMAL",
+    },
+    {
+        letter: "G",
+        type: "NORMAL",
+    },
+    {
+        letter: "A",
+        type: "BAD",
+    },
+    {
+        letter: "R",
+        type: "NORMAL",
+    }
+];
+---
+<!-- Main modal -->
+<div id="help-modal"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 w-full h-full z-50 bg-black bg-opacity-60 items-center justify-center">
+    <div id="modal" class="scale-0 relative p-4 w-full max-w-2xl max-h-full transition duration-300">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900 uppercase">
+                    LAS REGLAS DE WORDLE. ¿CÓMO JUGAR WORDLE?
+                </h3>
+                <button type="button" id="close-modal-btn"
+                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5 space-y-4">
+                <p class="text-base leading-relaxed text-gray-500">
+                    Adivina la palabra oculta en 6 intentos.
+                </p>
+                <p class="text-base leading-relaxed text-gray-500">
+                    Cada intento debe ser una palabra válida de 5 letras. No puedes indicar palabras que no tengan
+                    sentido o letras aleatorias. Pulse el botón Enter para enviar la palabra intuida.
+                </p>
+                <p class="text-base leading-relaxed text-gray-500">
+                    Después de cada intento el color de las letras cambia para mostrar qué tan cerca estás de acertar la
+                    palabra. Mira los ejemplos a continuación.
+                </p>
+                <hr class="flex items-center justify-between border-b rounded-t"/>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Ejemplos</h4>
+
+                <Row letters={GOOD_EXAMPLE}/>
+                <p class="text-base leading-relaxed text-gray-500">
+                    La letra <strong>A</strong> está en la palabra y en el lugar correcto.
+                </p>
+
+                <Row letters={CLUE_EXAMPLE}/>
+                <p class="text-base leading-relaxed text-gray-500">
+                    La letra <strong>I</strong> está en la palabra pero en el lugar equivocado.
+                </p>
+
+                <Row letters={BAD_EXAMPLE}/>
+                <p class="text-base leading-relaxed text-gray-500">
+                    La letra <strong>A</strong> no está en la palabra en ningún lugar.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<script is:inline>
+    /**
+     * Closes the modal by changing the scale of the modal content and hiding the modal element.
+     * @function
+     */
+    function closeModal() {
+        // Get the modal element
+        let modalElement = document.getElementById("help-modal");
+        // Get the modal content
+        let modalContent = document.getElementById("modal");
+
+        // Replace the "scale-100" class with "scale-0" on the modal content to shrink it
+        modalContent.classList.replace("scale-100", "scale-0");
+
+        // After 300ms, add the "hidden" class to the modal element to hide it
+        setTimeout(() => {
+            modalElement.classList.add("hidden");
+        }, 300);
+    }
+
+    // Get the close modal button
+    let closeModalBtn = document.getElementById("close-modal-btn");
+    // Add a click event listener to the close modal button that calls the closeModal function
+    closeModalBtn.addEventListener("click", closeModal);
+</script>
