@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Astro description">
+    <meta name="viewport" content="width=device-width">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <meta name="generator" content="Astro v3.6.4">
+    <title>Automata Wordle</title>
+    <link rel="stylesheet" href="/static/index.css"/>
+</head>
+<body class="h-screen w-screen max-h-screen max-w-screen overflow-auto">
+<header class="flex justify-center items-center">
+    <div class="w-fit flex items-center p-5 gap-5 border-b-2 border-gray-200 mb-10"><h1
+            class="text-3xl uppercase font-bold">
+        Automata Wordle
+    </h1>
+        <button type="button" id="open-modal-btn"
+                class="rounded-full w-[25px] h-[25px] border-2 border-gray-400 flex items-center justify-center p-1 text-gray-400 font-bold">
+            ?
+        </button>
+    </div>
+</header> <!-- Main modal -->
+<div id="help-modal"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 w-full h-full z-50 bg-black bg-opacity-60 items-center justify-center">
+    <div id="modal" class="scale-0 relative p-4 w-full max-w-2xl max-h-full transition duration-300">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow"> <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t"><h3
+                    class="text-xl font-semibold text-gray-900 uppercase">
+                LAS REGLAS DE WORDLE. ¿CÓMO JUGAR WORDLE?
+            </h3>
+                <button type="button" id="close-modal-btn"
+                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
+                    </svg>
+                    <span class="sr-only">Close modal</span></button>
+            </div> <!-- Modal body -->
+            <div class="p-4 md:p-5 space-y-4"><p class="text-base leading-relaxed text-gray-500">
+                Adivina la palabra oculta en 6 intentos.
+            </p>
+                <p class="text-base leading-relaxed text-gray-500">
+                    Cada intento debe ser una palabra válida de 5 letras. No puedes indicar palabras que no tengan
+                    sentido o letras aleatorias. Pulse el botón Enter para enviar la palabra intuida.
+                </p>
+                <p class="text-base leading-relaxed text-gray-500">
+                    Después de cada intento el color de las letras cambia para mostrar qué tan cerca estás de acertar la
+                    palabra. Mira los ejemplos a continuación.
+                </p>
+                <hr class="flex items-center justify-between border-b rounded-t">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Ejemplos</h4>
+                <div class="flex gap-1">
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-green-400 border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">A</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">Y</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">U</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">D</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">A</span></div>
+                </div>
+                <p class="text-base leading-relaxed text-gray-500">
+                    La letra <strong>A</strong> está en la palabra y en el lugar correcto.
+                </p>
+                <div class="flex gap-1">
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">C</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-yellow-300 border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">I</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">N</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">C</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">O</span></div>
+                </div>
+                <p class="text-base leading-relaxed text-gray-500">
+                    La letra <strong>I</strong> está en la palabra pero en el lugar equivocado.
+                </p>
+                <div class="flex gap-1">
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">J</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">U</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">G</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-gray-500 border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">A</span></div>
+                    <div class="flex items-center justify-center h-[50px] w-[50px] bg-white border border-gray-200 rounded-lg shadow">
+                        <span class="text-2xl font-bold tracking-tight text-gray-900">R</span></div>
+                </div>
+                <p class="text-base leading-relaxed text-gray-500">
+                    La letra <strong>A</strong> no está en la palabra en ningún lugar.
+                </p></div>
+        </div>
+    </div>
+</div>
+<script>
+    function closeModal() {
+        let modalElement = document.getElementById("help-modal");
+        let modalContent = document.getElementById("modal");
+
+        modalContent.classList.replace("scale-100", "scale-0");
+
+        setTimeout(() => {
+            modalElement.classList.add("hidden");
+        }, 300);
+    }
+
+    let closeModalBtn = document.getElementById("close-modal-btn");
+    closeModalBtn.addEventListener("click", closeModal);
+</script> <!-- Main modal -->
+<div id="win-modal"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 w-full h-full z-50 bg-black bg-opacity-60 items-center justify-center">
+    <div id="win-content" class="scale-0 relative p-4 w-full max-w-2xl max-h-full transition duration-300">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow"> <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t"><h3
+                    class="text-xl font-semibold text-gray-900 uppercase"> ¡Felicidades! Has ganado el juego
+                Wordle </h3></div> <!-- Modal body -->
+            <div class="p-4 md:p-5 space-y-4"><p class="text-base leading-relaxed text-gray-500">
+                ¡Eres un maestro de las palabras! Has adivinado la palabra correctamente y has demostrado tus
+                habilidades
+                lingüísticas. ¡Excelente trabajo!
+            </p></div> <!-- Modal footer -->
+            <div class="flex items-center justify-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button id="close-win-modal" type="button"
+                        class="text-white bg-green-500 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                    Jugar de nuevo
+                </button>
+            </div>
+        </div>
+    </div>
+</div> <!-- Main modal -->
+<div id="lose-modal"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 w-full h-full z-50 bg-black bg-opacity-60 items-center justify-center">
+    <div id="lose-content" class="scale-0 relative p-4 w-full max-w-2xl max-h-full transition duration-300">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow"> <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t"><h3
+                    class="text-xl font-semibold text-gray-900 uppercase"> ¡Oh no! Has agotado todos tus intentos </h3>
+            </div> <!-- Modal body -->
+            <div class="p-4 md:p-5 space-y-4"><p class="text-base leading-relaxed text-gray-500"><strong>Palabra
+                Oculta:</strong> <span id="answer"></span></p>
+                <p class="text-base leading-relaxed text-gray-500">
+                    No te desanimes, ¡inténtalo de nuevo! La próxima vez puedes descifrar la palabra oculta con menos
+                    intentos.
+                    ¡Sigue intentándolo!
+                </p></div> <!-- Modal footer -->
+            <div class="flex items-center justify-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button id="close-lose-modal" type="button"
+                        class="text-white bg-green-500 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                    Jugar de nuevo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<main class="w-full flex flex-col items-center gap-20">
+    <section id="board" class="grid grid-cols-5 gap-2"></section>
+    <div id="keyboard" class="flex flex-col gap-2 justify-center items-center"></div>
+    <script>
+        function simulateKeyPress(key) {
+            // Create a custom keyboard event
+            const keyboardEvent = new KeyboardEvent('keyup', {key});
+
+            // Trigger the keyboard event on the target element
+            document.dispatchEvent(keyboardEvent);
+        }
+
+        function generateKeyboard() {
+            const keys1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
+            const keys2 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ñ'];
+            const keys3 = ['Enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Backspace'];
+
+            const keyboardContainer = document.getElementById('keyboard');
+
+            keyboardContainer.appendChild(generateRow(keys1));
+            keyboardContainer.appendChild(generateRow(keys2));
+            keyboardContainer.appendChild(generateRow(keys3));
+        }
+
+        function generateRow(keys) {
+            let row = document.createElement("div");
+            keys.forEach(key => {
+                const keyButton = document.createElement('button');
+                keyButton.classList.add("flex", "items-center", "justify-center", "p-2", "min-w-[35px]", "border", "border-gray-200", "rounded-lg", "shadow", "text-lg", "font-medium", "tracking-tight", "text-gray-600");
+                keyButton.textContent = key.toUpperCase();
+                keyButton.addEventListener('click', () => simulateKeyPress(key));
+                row.appendChild(keyButton);
+            });
+            row.classList.add("flex", "gap-2", "justify-center", "items-center");
+            return row;
+        }
+
+        // Generate the keyboard when the page loads
+        document.addEventListener('DOMContentLoaded', generateKeyboard);
+    </script>
+</main>
+</body>
+</html>
+<script>
+
+    const MAX_COLS = 5;
+    const MAX_ROWS = 6;
+    const ALPHABET_START = "a";
+    const ALPHABET_END = "z";
+    const SPECIAL_CHARACTER = "ñ";
+    const BACKSPACE_KEY = "Backspace";
+    const ENTER_KEY = "Enter"
+
+
+    let currentRow = 0;
+    let currentCol = 0;
+
+    let gameOver = false;
+    let word = "Ayuda";
+
+    let gameBoard = document.getElementById("board");
+
+    window.onload = function () {
+        initialize();
+    };
+
+    function initialize() {
+        // Create game board
+        for (let r = 0; r < MAX_ROWS; r++) {
+            for (let c = 0; c < MAX_COLS; c++) {
+                let tile = document.createElement("div");
+
+                tile.classList.add("flex", "items-center", "justify-center", "h-[50px]", "w-[50px]", "border", "border-gray-200", "rounded-lg", "shadow");
+
+                let tileChild = document.createElement("span");
+
+                tileChild.classList.add("text-2xl", "font-bold", "tracking-tight", "text-gray-900");
+
+                tileChild.id = getTileId(r, c);
+
+                tile.appendChild(tileChild);
+
+                gameBoard.appendChild(tile);
+            }
+        }
+    }
+
+    function getTileId(row, col) {
+        return row.toString() + "-" + col.toString();
+    }
+
+
+    // Listen for key press
+    document.addEventListener("keyup", (evt) => {
+        if (gameOver) {
+            return;
+        }
+
+        if ((ALPHABET_START <= evt.key && evt.key <= ALPHABET_END) || evt.key === SPECIAL_CHARACTER) {
+            if (currentCol < MAX_COLS) {
+                let currentTileId = getTileId(currentRow, currentCol);
+                let currentTile = document.getElementById(currentTileId);
+
+                if (currentTile.innerText === "") {
+                    currentTile.textContent = evt.key.toUpperCase();
+                    currentCol++;
+                }
+            }
+        } else if (evt.key === BACKSPACE_KEY) {
+
+            if (currentCol > 0 && currentCol <= MAX_COLS) {
+                currentCol--;
+            }
+
+            let currentTileId = getTileId(currentRow, currentCol);
+            let currentTile = document.getElementById(currentTileId);
+
+            currentTile.textContent = "";
+
+        } else if (evt.key === ENTER_KEY && currentCol === MAX_COLS) {
+            update();
+            currentRow++;
+            currentCol = 0;
+        }
+
+        if (!gameOver && currentRow === MAX_ROWS) {
+            setTimeout(() => {
+                document.getElementById("answer").innerText = word;
+
+                openModal("lose-modal", "lose-content");
+            }, 3000);
+        }
+    });
+
+    async function update() {
+        const allButtons = document.querySelectorAll('#keyboard div button');
+
+        let correctAnswers = 0;
+        for (let c = 0; c < MAX_COLS; c++) {
+            let currentTileId = getTileId(currentRow, c);
+            let currentTile = document.getElementById(currentTileId);
+
+            let letter = currentTile.innerText.toUpperCase();
+
+            let parentTile = currentTile.parentElement;
+
+            let key = null;
+
+            allButtons.forEach(button => {
+                if (button.textContent.toUpperCase() === letter) {
+                    key = button;
+                }
+            });
+
+            setTimeout(() => {
+                parentTile.classList.add("rotate");
+
+                setTimeout(() => {
+                    // Is in correct position?
+                    if (word.toUpperCase()[c] === letter) {
+                        let color = getColor("GOOD");
+                        parentTile.classList.add(color);
+                        correctAnswers++;
+
+                        if (key.classList.contains(getColor("CLUE"))) {
+                            key.classList.remove(getColor("CLUE"))
+                        } else if (key.classList.contains(getColor("BAD"))) {
+                            key.classList.remove(getColor("BAD"))
+                        }
+
+                        key.classList.add(color);
+                    }
+                    // Is it in the word?
+                    else if (word.toUpperCase().includes(letter)) {
+                        let color = getColor("CLUE");
+                        parentTile.classList.add(color);
+                        if (!key.classList.contains(getColor("GOOD"))) {
+                            key.classList.add(color);
+                        }
+                    }
+                    // Not in the word
+                    else {
+                        let color = getColor("BAD");
+                        parentTile.classList.add(color);
+                        if (!key.classList.contains(getColor("GOOD"))) {
+                            key.classList.add(color);
+                        }
+                    }
+
+                    if (correctAnswers === MAX_COLS) {
+                        setTimeout(() => {
+                            openModal("win-modal", "win-content");
+                        }, 100);
+                    }
+                }, 500);
+            }, c * 500);
+        }
+    }
+
+    function getColor(type) {
+        const colors = {
+            "NORMAL": "bg-white",
+            "CLUE": "bg-yellow-300",
+            "GOOD": "bg-green-400",
+            "BAD": "bg-gray-500"
+        };
+
+        return colors[type] ?? "";
+    }
+
+    // Modals logic
+    function openModal(idModal, idModalContent) {
+        let modalElement = document.getElementById(idModal);
+        let modalContent = document.getElementById(idModalContent);
+
+        modalElement.classList.replace("hidden", "flex");
+
+        setTimeout(() => {
+            modalContent.classList.replace("scale-0", "scale-100");
+        }, 100);
+    }
+
+    document.getElementById("open-modal-btn").addEventListener("click", () => openModal("help-modal", "modal"));
+    document.getElementById("close-win-modal").addEventListener("click", () => location.reload());
+    document.getElementById("close-lose-modal").addEventListener("click", () => location.reload());
+</script>
