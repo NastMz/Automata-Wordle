@@ -1,0 +1,53 @@
+---
+
+---
+<div id="keyboard" class="flex flex-col gap-2 justify-center items-center"></div>
+<script is:inline>
+    /**
+     * Simulates a key press event.
+     * @param {string} key - The key to simulate.
+     */
+    function simulateKeyPress(key) {
+        // Create a custom keyboard event
+        const keyboardEvent = new KeyboardEvent('keyup', {key});
+
+        // Trigger the keyboard event on the target element
+        document.dispatchEvent(keyboardEvent);
+    }
+
+    /**
+     * Generates a keyboard layout and appends it to the keyboard container.
+     */
+    function generateKeyboard() {
+        const keys1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
+        const keys2 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ñ'];
+        const keys3 = ['Enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Backspace'];
+
+        const keyboardContainer = document.getElementById('keyboard');
+
+        keyboardContainer.appendChild(generateRow(keys1));
+        keyboardContainer.appendChild(generateRow(keys2));
+        keyboardContainer.appendChild(generateRow(keys3));
+    }
+
+    /**
+     * Generates a row of keys for the keyboard.
+     * @param {Array<string>} keys - An array of keys to generate.
+     * @returns {HTMLDivElement} The generated row of keys.
+     */
+    function generateRow(keys) {
+        let row = document.createElement("div");
+        keys.forEach(key => {
+            const keyButton = document.createElement('button');
+            keyButton.classList.add("flex", "items-center", "justify-center", "p-2", "min-w-[35px]", "border", "border-gray-200", "rounded-lg", "shadow", "text-lg", "font-medium", "tracking-tight", "text-gray-600");
+            keyButton.textContent = key.toUpperCase();
+            keyButton.addEventListener('click', () => simulateKeyPress(key));
+            row.appendChild(keyButton);
+        });
+        row.classList.add("flex", "gap-2", "justify-center", "items-center");
+        return row;
+    }
+
+    // Generate the keyboard when the page loads
+    document.addEventListener('DOMContentLoaded', generateKeyboard);
+</script>
