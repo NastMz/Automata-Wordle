@@ -11,7 +11,7 @@ Automata Wordle is a fun and engaging word guessing game inspired by the popular
 
 ## Usage
 
-To play the game, both the backend and frontend services need to be running. The desktop application starts with an empty game board. Type a letter and press Enter to submit your guess. The game board will update to reflect your guess. Continue guessing letters until you have correctly guessed the word or exhausted all your attempts.
+To play the game, both the backend and frontend services need to be running (See [Running the Application](#running-the-application)). Once the application is running, you can start guessing letters. The game will provide feedback on your guesses and update the game board accordingly. Continue guessing letters until you have correctly guessed the word or exhausted all your attempts.
 
 ## Structure
 
