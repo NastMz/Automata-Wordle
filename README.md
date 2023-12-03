@@ -28,3 +28,15 @@ For more details about each part, please refer to the README files in the respec
 ## Running the Application
 
 To run the application, you only need to run the `main.py` file in the root directory. This will start the backend service and open the desktop application window. The application window will display the game board and a virtual keyboard. You can use the virtual keyboard or use your physical keyboard to type letters and submit your guesses. The game board will update to reflect your guesses. Continue guessing letters until you have correctly guessed the word or exhausted all your attempts.
+
+Follow these steps to run the application:
+
+1. Install the dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Run the application:
+   ```bash
+    python main.py
+    ```
+   

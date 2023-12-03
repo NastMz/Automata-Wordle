@@ -7,7 +7,6 @@ Automata Wordle Desktop Application is a desktop version of the Automata Wordle 
 - Handles the application window events such as closing the window.
 
 ## Usage
-- The application starts with an empty game board.
-- Type a letter and press Enter to submit your guess.
-- The game board will update to reflect your guess.
-- Continue guessing letters until you have correctly guessed the word or exhausted all your attempts.
+> This project only contains the view layer of the application. To run the application, you need to run the application from the root directory.
+
+Actually we don't provide a way to run this project separately, it is already integrated with the backend service. See this [README](https://github.com/NastMz/Automata-Wordle/tree/main/README.md) for more details.
