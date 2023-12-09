@@ -34,3 +34,4 @@ ui/.env.production
 logs
 *.log
 
+__pycache__
