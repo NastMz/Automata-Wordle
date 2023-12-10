@@ -21,7 +21,10 @@
             ?
         </button>
     </div>
-</header> <!-- Main modal -->
+</header>
+<div id="loader" class="absolute inset-0 flex items-center justify-center bg-white" data-astro-cid-4qws3apc>
+    <div class="loader" data-astro-cid-4qws3apc></div>
+</div>  <!-- Main modal -->
 <div id="help-modal"
      class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 w-full h-full z-50 bg-black bg-opacity-60 items-center justify-center">
     <div id="modal" class="scale-0 relative p-4 w-full max-w-2xl max-h-full transition duration-300">
@@ -305,6 +308,12 @@
      */
     let gameBoard = document.getElementById("board");
 
+    /**
+     * Keyboard enabled status.
+     * @type {boolean}
+     */
+    let keyboardEnabled = false;
+
     let socket;
 
     /**
@@ -313,7 +322,7 @@
     window.onload = function () {
         initialize();
 
-        socket = io('http://localhost:5000/game');
+        socket = io('http://127.0.0.1:5000/game');
 
         // Start the game when the socket connects to the server
         socket.on('connect', function () {
@@ -324,6 +333,13 @@
         socket.on('disconnect', function () {
             window.location.reload();
         });
+
+        socket.on('start', function (msg) {
+            let loader = document.getElementById('loader');
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+            keyboardEnabled = true;
+        })
 
         // Verify the word when the user presses the enter key
         socket.on('escribir', function (msg) {
@@ -411,7 +427,7 @@
     // Listen for key press
     document.addEventListener("keyup", (evt) => {
         // If the game is over, don't do anything.
-        if (gameOver) {
+        if (gameOver || !keyboardEnabled) {
             return;
         }
 
@@ -487,7 +503,7 @@
 
             // Find the key in the keyboard that corresponds to the letter in the tile
             allButtons.forEach(button => {
-                if (button.textContent.toUpperCase() === letter) {
+                if (button.textContent.toLowerCase() === letter) {
                     key = button;
                 }
             });
