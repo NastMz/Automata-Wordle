@@ -7,6 +7,7 @@ automata = Automata()
 
 @socketio.on('start', namespace='/game')
 def handle_start_game(msg):
+    automata.restart()
     result = automata.update('start')
     emit('start', result)
 
