@@ -4,6 +4,7 @@ import HelpModal from '../components/HelpModal.astro';
 import GameOverModal from "../components/GameOverModal.astro";
 import Keyboard from "../components/Keyboard.astro";
 import Toast from "../components/Toast.astro";
+import Loader from "../components/Loader.astro";
 ---
 <Layout title="Automata Wordle">
     <header class="flex justify-center items-center">
@@ -17,6 +18,7 @@ import Toast from "../components/Toast.astro";
             </button>
         </div>
     </header>
+    <Loader/>
     <HelpModal/>
     <GameOverModal
             title="¡Felicidades! Has ganado el juego Wordle"
@@ -139,6 +141,12 @@ import Toast from "../components/Toast.astro";
      */
     let gameBoard = document.getElementById("board");
 
+    /**
+     * Keyboard enabled status.
+     * @type {boolean}
+     */
+    let keyboardEnabled = false;
+
     let socket;
 
     /**
@@ -147,7 +155,7 @@ import Toast from "../components/Toast.astro";
     window.onload = function () {
         initialize();
 
-        socket = io('http://localhost:5000/game');
+        socket = io('http://127.0.0.1:5000/game');
 
         // Start the game when the socket connects to the server
         socket.on('connect', function () {
@@ -158,6 +166,13 @@ import Toast from "../components/Toast.astro";
         socket.on('disconnect', function () {
             window.location.reload();
         });
+
+        socket.on('start', function (msg) {
+            let loader = document.getElementById('loader');
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+            keyboardEnabled = true;
+        })
 
         // Verify the word when the user presses the enter key
         socket.on('escribir', function (msg) {
@@ -245,7 +260,7 @@ import Toast from "../components/Toast.astro";
     // Listen for key press
     document.addEventListener("keyup", (evt) => {
         // If the game is over, don't do anything.
-        if (gameOver) {
+        if (gameOver || !keyboardEnabled) {
             return;
         }
 
@@ -321,7 +336,7 @@ import Toast from "../components/Toast.astro";
 
             // Find the key in the keyboard that corresponds to the letter in the tile
             allButtons.forEach(button => {
-                if (button.textContent.toUpperCase() === letter) {
+                if (button.textContent.toLowerCase() === letter) {
                     key = button;
                 }
             });
