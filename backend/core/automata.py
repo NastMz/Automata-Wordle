@@ -113,9 +113,6 @@ class Automata:
             if self.change_state(symbol) is False:
                 return {'result': f'transición no válida ({symbol}) para el estado ({self.current_state})'}
             self.word_gen = generate_word()
-            return {'result': {
-                'word': self.word_gen
-            }}
 
         if symbol == 'escribir':
             if self.change_state(symbol) is False:
