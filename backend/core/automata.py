@@ -17,6 +17,8 @@ class Automata:
         word_write (str): The word input by the player.
 
     Methods:
+        __new__(cls, *args, **kwargs) -> Automata: Implements the Singleton pattern to allow only one instance of the class.
+        __init__(self): Initializes the Automata class.
         change_state(symbol: str) -> Union[bool, str]: Changes the state of the automaton based on the given input transition.
         restart(): Resets the game to its initial state.
         update(symbol: str, msg=None) -> dict: Updates the game state based on the input symbol and an optional message.
@@ -27,6 +29,9 @@ class Automata:
     def __new__(cls, *args, **kwargs):
         """
         Singleton pattern implementation. Only one instance of the class can exist at a time.
+
+        Returns:
+            Automata: The instance of the Automata class.
         """
         if not cls._instance:
             cls._instance = super(Automata, cls).__new__(cls, *args, **kwargs)
