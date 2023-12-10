@@ -6,25 +6,22 @@ class Automata:
     Class representing a simple automaton for managing the flow of a game.
 
     Attributes:
-    - alphabet (set): The set of valid actions or transitions that the automaton can recognize.
-    - states (set): The set of possible states that the automaton can be in during the game.
-    - transitions (dict): A dictionary representing the possible transitions between states based on input actions.
-    - initial_state (str): The initial state of the automaton when the game starts.
-    - final_states (set): The set of states that, when reached, signify the end of the game.
-    - current_state (str): The current state of the automaton during the game.
+        alphabet (set): The set of valid actions or transitions that the automaton can recognize.
+        states (set): The set of possible states that the automaton can be in during the game.
+        transitions (dict): A dictionary representing the possible transitions between states based on input actions.
+        initial_state (str): The initial state of the automaton when the game starts.
+        final_states (set): The set of states that, when reached, signify the end of the game.
+        current_state (str): The current state of the automaton during the game.
+        life (int): The number of lives or attempts available in the game.
+        word_gen (str): The randomly generated word for the game.
+        word_write (str): The word input by the player.
 
     Methods:
-    - change_state(symbol: str) -> Union[bool, str]: 
-        Changes the state of the automaton based on the given input transition.
-
-        Args:
-        - symbol (str): The transition to be applied.
-
-        Returns:
-        - bool or str: 
-            - False if the transition is not valid.
-            - True if a final state is reached, indicating the end of the game.
-            - The new state if the transition is valid and a final state is not reached.
+        __new__(cls, *args, **kwargs) -> Automata: Implements the Singleton pattern to allow only one instance of the class.
+        __init__(self): Initializes the Automata class.
+        change_state(symbol: str) -> Union[bool, str]: Changes the state of the automaton based on the given input transition.
+        restart(): Resets the game to its initial state.
+        update(symbol: str, msg=None) -> dict: Updates the game state based on the input symbol and an optional message.
     """
 
     _instance = None
@@ -32,6 +29,9 @@ class Automata:
     def __new__(cls, *args, **kwargs):
         """
         Singleton pattern implementation. Only one instance of the class can exist at a time.
+
+        Returns:
+            Automata: The instance of the Automata class.
         """
         if not cls._instance:
             cls._instance = super(Automata, cls).__new__(cls, *args, **kwargs)
@@ -39,7 +39,21 @@ class Automata:
 
     def __init__(self):
         """
-        Initializes the automaton with the alphabet, states, transitions, and initial/final states.
+        Initializes the Automata class.
+
+        The Automata class represents a simple game automaton designed for word-guessing games.
+        It manages the flow of the game through different states and transitions based on player actions.
+
+        Attributes:
+            alphabet (set): The set of valid actions or transitions that the automaton can recognize.
+            states (set): The set of possible states that the automaton can be in during the game.
+            transitions (dict): A dictionary representing the possible transitions between states based on input actions.
+            initial_state (str): The initial state of the automaton when the game starts.
+            final_states (set): The set of states that, when reached, signify the end of the game.
+            current_state (str): The current state of the automaton during the game.
+            life (int): The number of lives or attempts available in the game.
+            word_gen (str): The randomly generated word for the game.
+            word_write (str): The word input by the player.
         """
         # Define the alphabet
         self.alphabet = {'start', 'escribir', 'verificar', 'incorrecto',
@@ -71,13 +85,16 @@ class Automata:
 
     def change_state(self, symbol):
         """
-        Changes the state of the automaton based on the given transition.
+        Changes the state of the automaton based on the given input transition.
 
         Args:
-        - symbol (str): The transition to be applied.
+            symbol (str): The transition to be applied.
 
         Returns:
-        - bool or str: False if the transition is not valid, True if a final state is reached, or the new state if the transition is valid and a final state is not reached.
+            bool or str:
+                - False if the transition is not valid.
+                - True if a final state is reached, indicating the end of the game.
+                - The new state if the transition is valid and a final state is not reached.
         """
         # Handling final states
         if self.current_state == 'WIN':
@@ -99,14 +116,33 @@ class Automata:
 
     def restart(self):
         """
-        Doc here
+        Resets the game to its initial state, allowing the player to start a new game.
+
+        The restart method resets the game by setting the current state back to the initial state
+        and restoring the initial number of lives. This method is called when the player chooses to
+        start a new game or after the current game has ended.
+
+        Args:
+            None
+
+        Returns:
+            None
+
         """
         self.current_state = self.initial_state
         self.life = 6
 
     def update(self, symbol, msg=None):
         """
-        Doc here
+        Updates the game state based on the input symbol and an optional message.
+
+        Args:
+            symbol (str): The action or transition to be applied.
+            msg (str, optional): An optional message associated with the action.
+
+        Returns:
+            dict:
+                Dictionary with the result of the game depending on the state and the symbol.
         """
         if symbol == 'start':
             self.restart()
