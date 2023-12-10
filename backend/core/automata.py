@@ -51,7 +51,7 @@ class Automata:
 
         # Define initial, final and current states
         self.initial_state = 'INICIAR_JUEGO'
-        self.final_states = {'WIN', 'GAME_OVER'}
+        self.final_states = {'WIN'}
         self.current_state = self.initial_state
 
         # Define var game
@@ -70,7 +70,7 @@ class Automata:
         - bool or str: False if the transition is not valid, True if a final state is reached, or the new state if the transition is valid and a final state is not reached.
         """
         # Handling final states
-        if self.current_state in {'WIN', 'GAME_OVER'}:
+        if self.current_state == 'WIN':
             print(
                 f'El juego ha terminado en el estado {self.current_state}. No se pueden realizar más transiciones.')
             return True
