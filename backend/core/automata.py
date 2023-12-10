@@ -3,6 +3,7 @@ from .utils import generate_word, generate_hint
 
 class Automata:
     """
+    TODO: UPDATE DOC
     Class representing a simple automaton for managing the flow of a game.
 
     Attributes:
@@ -29,7 +30,7 @@ class Automata:
 
     def __init__(self):
         """
-        Initializes the automaton with the alphabet, states, transitions, and initial/final states.
+        Doc here
         """
         # Define the alphabet
         self.alphabet = {'start', 'escribir', 'verificar', 'incorrecto',
@@ -61,13 +62,7 @@ class Automata:
 
     def change_state(self, symbol):
         """
-        Changes the state of the automaton based on the given transition.
-
-        Args:
-        - symbol (str): The transition to be applied.
-
-        Returns:
-        - bool or str: False if the transition is not valid, True if a final state is reached, or the new state if the transition is valid and a final state is not reached.
+        Doc here
         """
         # Handling final states
         if self.current_state == 'WIN':

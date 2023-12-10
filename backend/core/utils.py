@@ -24,10 +24,7 @@ def generate_word():
 
 def generate_hint(word_write, word_gen):
     """
-    Generates a hint based on the written and generated words.
-
-    Returns:
-    - dict: A dictionary containing 'good' and 'near' hints.
+    Doc here
     """
     good_hints = []
     near_hints = []
