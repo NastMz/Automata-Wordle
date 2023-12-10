@@ -42,9 +42,6 @@ def generate_hint(word_write, word_gen):
     written_letters = list(word_write.lower())
     generated_letters = list(word_gen.lower())
 
-    print(written_letters)
-    print(generated_letters)
-
     # Creamos una copia de las letras generadas para marcar las ocurrencias que ya hemos utilizado
     used_indices = set()
 
