@@ -348,8 +348,22 @@ import Loader from "../components/Loader.astro";
 
                 // Wait for the animation to finish before coloring the tile
                 setTimeout(() => {
+                    let type = "";
+
+                    clues.good.forEach((good) => {
+                        if (good.letter.toLowerCase() === letter && good.position === c) {
+                            type = "GOOD";
+                        }
+                    });
+
+                    clues.near.forEach((near) => {
+                        if (near.letter.toLowerCase() === letter && near.position === c) {
+                            type = "CLUE";
+                        }
+                    });
+
                     // Is it the correct letter in the word in the correct position?
-                    if (clues.good.some((good) => good.letter.toLowerCase() === letter)) {
+                    if (type === "GOOD") {
                         let color = getColor("GOOD");
                         parentTile.classList.add(color);
 
@@ -362,7 +376,7 @@ import Loader from "../components/Loader.astro";
                         key.classList.add(color);
                     }
                     // Is a letter in the word but not in the correct position?
-                    else if (clues.near.some((clue) => clue.letter.toLowerCase() === letter)) {
+                    else if (type === "CLUE") {
                         let color = getColor("CLUE");
                         parentTile.classList.add(color);
                         if (!key.classList.contains(getColor("GOOD"))) {
