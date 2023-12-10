@@ -111,7 +111,7 @@ class Automata:
             if self.change_state(symbol) is False:
                 return {'result': f'transición no válida ({symbol}) para el estado ({self.current_state})'}
             self.word_write = msg
-            if self.current_state in {'WIN', 'GAME_OVER'}:
+            if self.current_state == 'WIN':
                 return (f'el juego ha terminado en el estado {self.current_state}. No se pueden realizar más '
                         f'transiciones.')
             else:
@@ -131,7 +131,7 @@ class Automata:
                 self.change_state('quedan_vidas')
                 hint = generate_hint(self.word_write, self.word_gen)
                 self.change_state('')
-                if self.current_state in {'WIN', 'GAME_OVER'}:
+                if self.current_state == 'WIN':
                     return (f'el juego ha terminado en el estado {self.current_state}. No se pueden realizar más '
                             f'transiciones.')
                 else:
