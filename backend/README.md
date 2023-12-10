@@ -21,13 +21,16 @@ Automata-Wordle/
 │   │   ├── automata.py
 │   │   ├── utils.py
 │   │   └── words.txt
-│   ├── core/
+│   ├── main/
 │   │   ├── __init__.py
+│   │   ├── blueprints.py
 │   │   ├── events.py
-│   │   └── routes.txt
+│   │   ├── routes.py
+│   │   └── websocket.py
 │   ├── static/
-│   │   ├── favicon.svg
-│   │   └── index.css
+│   │   ├── icon.png
+│   │   ├── index.css
+│   │   └── socket.io.min.js
 │   ├── templates/
 │   │   └── index.html
 │   ├── app.py
