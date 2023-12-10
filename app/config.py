@@ -1,4 +1,4 @@
 APP_CONFIG = {
     "port": 5000,
-    "host": "localhost",
+    "host": "127.0.0.1",
 }
