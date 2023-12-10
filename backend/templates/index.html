@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <meta name="generator" content="Astro v3.6.4">
+    <script src="/static/socket.io.min.js"></script>
     <title>Automata Wordle</title>
     <link rel="stylesheet" href="/static/index.css"/>
 </head>
-<body class="h-screen w-screen max-h-screen max-w-screen overflow-auto">
+<body class="max-w-screen">
 <header class="flex justify-center items-center">
     <div class="w-fit flex items-center p-5 gap-5 border-b-2 border-gray-200 mb-10"><h1
             class="text-3xl uppercase font-bold">
@@ -101,18 +102,28 @@
     </div>
 </div>
 <script>
+    /**
+     * Closes the modal by changing the scale of the modal content and hiding the modal element.
+     * @function
+     */
     function closeModal() {
+        // Get the modal element
         let modalElement = document.getElementById("help-modal");
+        // Get the modal content
         let modalContent = document.getElementById("modal");
 
+        // Replace the "scale-100" class with "scale-0" on the modal content to shrink it
         modalContent.classList.replace("scale-100", "scale-0");
 
+        // After 300ms, add the "hidden" class to the modal element to hide it
         setTimeout(() => {
             modalElement.classList.add("hidden");
         }, 300);
     }
 
+    // Get the close modal button
     let closeModalBtn = document.getElementById("close-modal-btn");
+    // Add a click event listener to the close modal button that calls the closeModal function
     closeModalBtn.addEventListener("click", closeModal);
 </script> <!-- Main modal -->
 <div id="win-modal"
@@ -130,7 +141,7 @@
             </p></div> <!-- Modal footer -->
             <div class="flex items-center justify-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
                 <button id="close-win-modal" type="button"
-                        class="text-white bg-green-500 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        class="text-white cursor-pointer bg-green-500 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
                     Jugar de nuevo
                 </button>
             </div>
@@ -154,17 +165,25 @@
                 </p></div> <!-- Modal footer -->
             <div class="flex items-center justify-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
                 <button id="close-lose-modal" type="button"
-                        class="text-white bg-green-500 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        class="text-white cursor-pointer bg-green-500 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
                     Jugar de nuevo
                 </button>
             </div>
         </div>
     </div>
 </div>
-<main class="w-full flex flex-col items-center gap-20">
+<div id="toast" class="hidden absolute z-20 inset-0 items-center justify-center">
+    <div class="flex items-center justify-center w-full max-w-xs p-4 text-gray-500 border-2 border-gray-200 bg-white rounded-lg shadow-lg"
+         role="alert"><p class="text-center font-semibold">Palabra no encontrada</p></div>
+</div>
+<main class="w-full flex flex-col items-center gap-10 pb-20">
     <section id="board" class="grid grid-cols-5 gap-2"></section>
     <div id="keyboard" class="flex flex-col gap-2 justify-center items-center"></div>
     <script>
+        /**
+         * Simulates a key press event.
+         * @param {string} key - The key to simulate.
+         */
         function simulateKeyPress(key) {
             // Create a custom keyboard event
             const keyboardEvent = new KeyboardEvent('keyup', {key});
@@ -173,10 +192,13 @@
             document.dispatchEvent(keyboardEvent);
         }
 
+        /**
+         * Generates a keyboard layout and appends it to the keyboard container.
+         */
         function generateKeyboard() {
             const keys1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
             const keys2 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ñ'];
-            const keys3 = ['Enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Backspace'];
+            const keys3 = ['Backspace', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Enter'];
 
             const keyboardContainer = document.getElementById('keyboard');
 
@@ -185,6 +207,11 @@
             keyboardContainer.appendChild(generateRow(keys3));
         }
 
+        /**
+         * Generates a row of keys for the keyboard.
+         * @param {Array<string>} keys - An array of keys to generate.
+         * @returns {HTMLDivElement} The generated row of keys.
+         */
         function generateRow(keys) {
             let row = document.createElement("div");
             keys.forEach(key => {
@@ -206,29 +233,152 @@
 </html>
 <script>
 
+    /**
+     * Maximum number of columns in the game board.
+     * @type {number}
+     */
     const MAX_COLS = 5;
+
+    /**
+     * Maximum number of rows in the game board.
+     * @type {number}
+     */
     const MAX_ROWS = 6;
+
+    /**
+     * Start of the alphabet for the game.
+     * @type {string}
+     */
     const ALPHABET_START = "a";
+
+    /**
+     * End of the alphabet for the game.
+     * @type {string}
+     */
     const ALPHABET_END = "z";
+
+    /**
+     * Special character allowed in the game.
+     * @type {string}
+     */
     const SPECIAL_CHARACTER = "ñ";
+
+    /**
+     * Key code for the backspace key.
+     * @type {string}
+     */
     const BACKSPACE_KEY = "Backspace";
-    const ENTER_KEY = "Enter"
 
+    /**
+     * Key code for the enter key.
+     * @type {string}
+     */
+    const ENTER_KEY = "Enter";
 
+    /**
+     * Current row in the game board.
+     * @type {number}
+     */
     let currentRow = 0;
+
+    /**
+     * Current column in the game board.
+     * @type {number}
+     */
     let currentCol = 0;
 
+    /**
+     * Game over status.
+     * @type {boolean}
+     */
     let gameOver = false;
-    let word = "Ayuda";
 
+    /**
+     * Clues for the word to guess. Is set by the server.
+     * @type {{}}
+     */
+    let clues = {};
+
+    /**
+     * Game board element.
+     * @type {HTMLElement}
+     */
     let gameBoard = document.getElementById("board");
 
+    let socket;
+
+    /**
+     * Initialize the game board on window load.
+     */
     window.onload = function () {
         initialize();
+
+        socket = io('http://localhost:5000/game');
+
+        // Start the game when the socket connects to the server
+        socket.on('connect', function () {
+            socket.emit('start', null);
+        });
+
+        // Reload the page when the socket disconnects from the server
+        socket.on('disconnect', function () {
+            window.location.reload();
+        });
+
+        // Verify the word when the user presses the enter key
+        socket.on('escribir', function (msg) {
+            socket.emit('verificar', null)
+        });
+
+        // Update the game state when the server sends the result of the word verification
+        socket.on('verificar', function (msg) {
+            // The word is invalid (not in the dictionary)
+            if (msg.result && msg.result === 'INVALID_WORD') {
+                showToast();
+                return;
+            }
+
+            // The user has run out of attempts and lost the game
+            if (msg.result && msg.result === 'GAME_OVER') {
+                update();
+                gameOver = true;
+                document.getElementById("answer").innerText = msg.answer;
+                setTimeout(() => {
+                    openModal("lose-modal", "lose-content");
+                }, 3000);
+                return;
+            }
+
+            // The user has guessed the word correctly and won the game
+            if (msg.result && msg.result === 'WIN') {
+                clues.good = getUserInput().split("").map((letter, index) => {
+                    return {
+                        letter: letter,
+                        position: index
+                    }
+                });
+
+                clues.near = [];
+
+                update();
+                gameOver = true;
+                setTimeout(() => {
+                    openModal("win-modal", "win-content");
+                }, 3000);
+                return;
+            }
+
+            // The user has guessed the word incorrectly and has to try again
+            clues = msg;
+            update();
+        });
     };
 
+    /**
+     * Initialize the game board.
+     */
     function initialize() {
-        // Create game board
+        // Create game board tiles and add them to the game board element
         for (let r = 0; r < MAX_ROWS; r++) {
             for (let c = 0; c < MAX_COLS; c++) {
                 let tile = document.createElement("div");
@@ -248,18 +398,27 @@
         }
     }
 
+    /**
+     * Get the ID of a tile.
+     * @param {number} row - The row of the tile.
+     * @param {number} col - The column of the tile.
+     * @returns {string} The ID of the tile.
+     */
     function getTileId(row, col) {
         return row.toString() + "-" + col.toString();
     }
 
-
     // Listen for key press
     document.addEventListener("keyup", (evt) => {
+        // If the game is over, don't do anything.
         if (gameOver) {
             return;
         }
 
+        // If the key pressed is a letter or the special character, add it to the current tile in the game board
         if ((ALPHABET_START <= evt.key && evt.key <= ALPHABET_END) || evt.key === SPECIAL_CHARACTER) {
+            // If the current column is less than the maximum number of columns, add the letter to the current tile
+            // and move to the next column in the game board (if possible)
             if (currentCol < MAX_COLS) {
                 let currentTileId = getTileId(currentRow, currentCol);
                 let currentTile = document.getElementById(currentTileId);
@@ -269,61 +428,81 @@
                     currentCol++;
                 }
             }
-        } else if (evt.key === BACKSPACE_KEY) {
+        }
+        // If the key pressed is the backspace key, delete the letter in the current tile in the game board
+        else if (evt.key === BACKSPACE_KEY) {
 
+            // If the current column is greater than 0 we can delete the letter in the current tile and move to the
+            // previous column in the game board
             if (currentCol > 0 && currentCol <= MAX_COLS) {
                 currentCol--;
             }
 
+            // Delete the letter in the current tile
             let currentTileId = getTileId(currentRow, currentCol);
             let currentTile = document.getElementById(currentTileId);
 
             currentTile.textContent = "";
 
-        } else if (evt.key === ENTER_KEY && currentCol === MAX_COLS) {
-            update();
-            currentRow++;
-            currentCol = 0;
         }
-
-        if (!gameOver && currentRow === MAX_ROWS) {
-            setTimeout(() => {
-                document.getElementById("answer").innerText = word;
-
-                openModal("lose-modal", "lose-content");
-            }, 3000);
+        // If the key pressed is the enter key, verify the word in the game board
+        else if (evt.key === ENTER_KEY && currentCol === MAX_COLS) {
+            socket.emit('escribir', {word: getUserInput()});
         }
     });
 
-    async function update() {
-        const allButtons = document.querySelectorAll('#keyboard div button');
-
-        let correctAnswers = 0;
+    /**
+     * Get the word in the game board.
+     * @returns {string} The word in the game board.
+     */
+    function getUserInput() {
+        let userInput = "";
         for (let c = 0; c < MAX_COLS; c++) {
             let currentTileId = getTileId(currentRow, c);
             let currentTile = document.getElementById(currentTileId);
 
-            let letter = currentTile.innerText.toUpperCase();
+            userInput += currentTile.innerText;
+        }
 
-            let parentTile = currentTile.parentElement;
+        return userInput;
+    }
 
-            let key = null;
+    /**
+     * Update the game state.
+     */
+    function update() {
+        // Get all the buttons in the virtual keyboard to color them accordingly
+        const allButtons = document.querySelectorAll('#keyboard div button'); // All buttons in the virtual keyboard
 
+        // Check each tile in the current row for correctness and color it accordingly
+        for (let c = 0; c < MAX_COLS; c++) {
+            let currentTileId = getTileId(currentRow, c); // Get the ID of the current tile
+            let currentTile = document.getElementById(currentTileId); // Get the current tile
+
+            let letter = currentTile.innerText.toLowerCase(); // Get the letter in the tile
+
+            let parentTile = currentTile.parentElement; // Get the parent of the tile (the div) to add the color class
+
+            let key = null; // The key in the keyboard to color accordingly
+
+            // Find the key in the keyboard that corresponds to the letter in the tile
             allButtons.forEach(button => {
                 if (button.textContent.toUpperCase() === letter) {
                     key = button;
                 }
             });
 
+            // Rotate the tile to show the color depending on the correctness of the letter in the word to guess
+            // We need to wait for the previous tile to rotate before rotating the next one
             setTimeout(() => {
                 parentTile.classList.add("rotate");
 
+                // Wait for the animation to finish before coloring the tile
                 setTimeout(() => {
-                    // Is in correct position?
-                    if (word.toUpperCase()[c] === letter) {
+                    // Is it the correct letter in the word in the correct position?
+                    if (clues.good.some((good) => good.letter.toLowerCase() === letter)) {
                         let color = getColor("GOOD");
                         parentTile.classList.add(color);
-                        correctAnswers++;
 
                         if (key.classList.contains(getColor("CLUE"))) {
                             key.classList.remove(getColor("CLUE"))
@@ -333,15 +512,15 @@
 
                         key.classList.add(color);
                     }
-                    // Is it in the word?
-                    else if (word.toUpperCase().includes(letter)) {
+                    // Is a letter in the word but not in the correct position?
+                    else if (clues.near.some((clue) => clue.letter.toLowerCase() === letter)) {
                         let color = getColor("CLUE");
                         parentTile.classList.add(color);
                         if (!key.classList.contains(getColor("GOOD"))) {
                             key.classList.add(color);
                         }
                     }
-                    // Not in the word
+                    // Isn't a letter in the word?
                     else {
                         let color = getColor("BAD");
                         parentTile.classList.add(color);
@@ -349,17 +528,19 @@
                             key.classList.add(color);
                         }
                     }
-
-                    if (correctAnswers === MAX_COLS) {
-                        setTimeout(() => {
-                            openModal("win-modal", "win-content");
-                        }, 100);
-                    }
                 }, 500);
             }, c * 500);
         }
+
+        currentRow++;
+        currentCol = 0;
     }
 
+    /**
+     * Get the color class for a given type.
+     * @param {string} type - The type of color.
+     * @returns {string} The color class.
+     */
     function getColor(type) {
         const colors = {
             "NORMAL": "bg-white",
@@ -371,7 +552,11 @@
         return colors[type] ?? "";
     }
 
-    // Modals logic
+    /**
+     * Open a modal. (Is called when the user clicks the help button)
+     * @param {string} idModal - The ID of the modal.
+     * @param {string} idModalContent - The ID of the modal content.
+     */
     function openModal(idModal, idModalContent) {
         let modalElement = document.getElementById(idModal);
         let modalContent = document.getElementById(idModalContent);
@@ -383,6 +568,21 @@
         }, 100);
     }
 
+    let toast = document.getElementById('toast');
+
+    /**
+     * Show the toast message. (Is called when the user enters an invalid word)
+     */
+    function showToast() {
+        toast.classList.remove('hidden');
+        toast.classList.add('flex');
+        setTimeout(() => {
+            toast.classList.remove('flex');
+            toast.classList.add('hidden');
+        }, 1500);
+    }
+
+    // Event listeners for modals
     document.getElementById("open-modal-btn").addEventListener("click", () => openModal("help-modal", "modal"));
     document.getElementById("close-win-modal").addEventListener("click", () => location.reload());
     document.getElementById("close-lose-modal").addEventListener("click", () => location.reload());
