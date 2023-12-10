@@ -2,19 +2,45 @@
 Automata Wordle API is a backend service built with Flask, a lightweight and powerful web framework for Python. This API serves the game mechanics for the Automata Wordle game, a simple, fun, and engaging word guessing game inspired by the popular online game Wordle.  
 
 ## Features
-- Provides endpoints for game initialization, letter guessing, and game status checking.
+- The game logic is managed by the provided Automata class, and the application utilizes Flask-SocketIO for real-time communication between the server and clients.
 - Handles game logic such as validating guesses, providing feedback, and determining game over conditions.
 - Serves static files for the frontend application.
 
-## Usage
-1. Send a GET request to `/start` to initialize a new game.
-2. Send a POST request to `/guess` with a letter to make a guess.
-3. Send a GET request to `/status` to get the current game status.
+## Project Structure
 
-## API Endpoints
-- `GET /start`: Initializes a new game and returns the initial game state.
-- `POST /guess`: Accepts a letter as input and returns the updated game state.
-- `GET /status`: Returns the current game state.
+```
+Automata-Wordle/
+│
+├── backend/
+│   ├── __init__.py
+│   ├── config/
+│   │   ├── __init__.py
+│   │   └── constants.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── automata.py
+│   │   ├── utils.py
+│   │   └── words.txt
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── events.py
+│   │   └── routes.txt
+│   ├── static/
+│   │   ├── favicon.svg
+│   │   └── index.css
+│   ├── templates/
+│   │   └── index.html
+│   ├── app.py
+│   ├── README.md
+├── README.md
+├── requirements.txt
+└── ...
+```
+
+## Usage
+- Access the application at `http://localhost:5000`.
+- Follow the on-screen instructions to play the word-guessing game.
+- WebSocket events (`start`, `escribir`, `verificar`) are handled through the `/game` namespace.
 
 ## Playing the Game
 The backend service already comes integrated with the frontend service. To play the game, you only need to run the backend service. To run the backend service, follow these steps:

@@ -5,7 +5,19 @@ from backend.config.constants import FILE_PATH
 
 def generate_word():
     """
-    Doc here
+    Generates a random word from a file.
+
+    This function reads a file containing a list of words, randomly selects one word,
+    and returns it. The file path is determined by the 'FILE_PATH' constant defined in
+    the 'backend.config.constants' module.
+
+    Returns:
+        str: A randomly chosen word from the file.
+
+    Raises:
+        ValueError: If the file is empty.
+        FileNotFoundError: If the file specified by 'FILE_PATH' is not found.
+
     """
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -24,7 +36,24 @@ def generate_word():
 
 def generate_hint(word_write, word_gen):
     """
-    Doc here
+    Generates hints based on the written word and the generated word.
+
+    This function compares the written word with the generated word and generates hints
+    indicating correct letters in the correct position ('good'), correct letters in the
+    wrong position ('near'), and incorrect letters ('bad').
+
+    Args:
+        word_write (str): The word written by the player.
+        word_gen (str): The randomly generated word.
+
+    Returns:
+        dict: A dictionary containing hints categorized as 'good', 'near', and 'bad'.
+            Example:
+            {
+                "good": [{"word": "a", "position": 0}],
+                "near": [{"word": "b", "position": 1}],
+                "bad": [{"word": "c", "position": 2}]
+            }
     """
     good_hints = []
     near_hints = []
