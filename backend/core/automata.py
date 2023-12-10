@@ -61,7 +61,7 @@ class Automata:
 
         # Define initial, final and current states
         self.initial_state = 'INICIAR_JUEGO'
-        self.final_states = {'WIN', 'GAME_OVER'}
+        self.final_states = {'WIN'}
         self.current_state = self.initial_state
 
         # Define var game
@@ -80,7 +80,7 @@ class Automata:
         - bool or str: False if the transition is not valid, True if a final state is reached, or the new state if the transition is valid and a final state is not reached.
         """
         # Handling final states
-        if self.current_state in {'WIN', 'GAME_OVER'}:
+        if self.current_state == 'WIN':
             print(
                 f'El juego ha terminado en el estado {self.current_state}. No se pueden realizar más transiciones.')
             return True
@@ -118,7 +118,7 @@ class Automata:
             if self.change_state(symbol) is False:
                 return {'result': f'transición no válida ({symbol}) para el estado ({self.current_state})'}
             self.word_write = msg
-            if self.current_state in {'WIN', 'GAME_OVER'}:
+            if self.current_state == 'WIN':
                 return (f'el juego ha terminado en el estado {self.current_state}. No se pueden realizar más '
                         f'transiciones.')
             else:
@@ -142,7 +142,7 @@ class Automata:
                 self.change_state('quedan_vidas')
                 hint = generate_hint(self.word_write.lower(), self.word_gen.lower())
                 self.change_state('')
-                if self.current_state in {'WIN', 'GAME_OVER'}:
+                if self.current_state == 'WIN':
                     return (f'el juego ha terminado en el estado {self.current_state}. No se pueden realizar más '
                             f'transiciones.')
                 else:
