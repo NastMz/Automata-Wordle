@@ -1,4 +1,8 @@
+import runpy
 import subprocess
+import sys
+import time
+import requests
 
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QIcon
@@ -11,17 +15,21 @@ from app.config import APP_CONFIG
 class AppWindow(QMainWindow):
     """
     This class represents the main application window. It inherits from QMainWindow.
-    It starts a Flask backend on initialization and sets up a QWebEngineView to display the web content.
+    It sets up a QWebEngineView to display the web content.
     """
 
     def __init__(self):
         """
-        Constructor for the AppWindow class. Initializes the Flask backend and the QWebEngineView.
+        Constructor for the AppWindow class. Initializes the QWebEngineView.
         """
         super(AppWindow, self).__init__()
 
-        self.flask_process = None
-        self.start_flask_backend()
+        self.flask_process = subprocess.Popen([sys.executable, 'backend/app.py'], stdout=subprocess.PIPE,
+                                              stderr=subprocess.PIPE)
+
+        # Wait for the server to start
+        while not self.is_server_running(APP_CONFIG['host'], APP_CONFIG['port']):
+            time.sleep(1)
 
         self.browser = QWebEngineView()
         url = QUrl(f"http://{APP_CONFIG['host']}:{APP_CONFIG['port']}")  # Create a URL object
@@ -31,26 +39,36 @@ class AppWindow(QMainWindow):
         self.setWindowTitle("Automata Wordle")  # Set the window title
         self.setWindowIcon(QIcon('assets/icon.png'))  # Set the window icon
 
-    def start_flask_backend(self):
-        """
-        Starts the Flask backend by running a Python script using subprocess.
-        """
-        python_executable = 'python'
-        script_path = 'backend/app.py'
+        # Focus the window
+        self.activateWindow()
 
-        self.flask_process = subprocess.Popen([python_executable, script_path], shell=True, stdout=subprocess.PIPE,
-                                              stderr=subprocess.PIPE)
+    @staticmethod
+    def is_server_running(host, port):
+        try:
+            response = requests.get(f'http://{host}:{port}')
+            return response.status_code == 200
+        except:
+            return False
 
     def closeEvent(self, event):
         """
-        Overrides the closeEvent method from QMainWindow.
-        Terminates the Flask backend process when the window is closed.
+        This method is called when the window is closed.
+
         """
-        if self.flask_process:
-            self.flask_process.terminate()  # Terminate the Flask process
-            self.flask_process.wait(1)  # Wait for the process to terminate
 
-            if self.flask_process.poll() is None:  # If the process is still running
-                self.flask_process.kill()  # Kill the process
+        # Terminate the Flask process
+        self.flask_process.terminate()
+        self.flask_process.wait()
 
-        event.accept()  # Accept the close event
+        if self.flask_process is not None:
+            self.flask_process.kill()
+
+        event.accept()
+
+
+def run_flask():
+    """
+    Runs the Flask backend using subprocess.
+    """
+    script_path = 'backend/app.py'
+    runpy.run_path(script_path, run_name="__main__")

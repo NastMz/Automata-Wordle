@@ -1,5 +1,5 @@
-from . import main
-from flask import render_template
+from .blueprints import main
+from flask import send_from_directory
 
 
 @main.route('/')
@@ -13,4 +13,4 @@ def home():
     Returns:
         str: The rendered HTML content of the 'index.html' template
     """
-    return render_template('index.html')
+    return send_from_directory('templates', 'index.html')

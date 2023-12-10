@@ -1,3 +1,4 @@
 flask
 pyside6
 flask_socketio
+requests

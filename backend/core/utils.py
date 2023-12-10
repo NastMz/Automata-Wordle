@@ -3,7 +3,7 @@ import random
 from backend.config.constants import FILE_PATH
 
 
-def generate_word():
+def get_words():
     """
     Generates a random word from a file.
 
@@ -19,7 +19,6 @@ def generate_word():
         FileNotFoundError: If the file specified by 'FILE_PATH' is not found.
 
     """
-
     current_dir = os.path.dirname(os.path.realpath(__file__))
     file_path = os.path.join(current_dir, FILE_PATH)
 
@@ -29,9 +28,16 @@ def generate_word():
             if not words:
                 raise ValueError(
                     "The file is empty. Please provide a file with words.")
-            return random.choice(words)
+            return words
     except FileNotFoundError:
         raise FileNotFoundError(f"The file {file_path} was not found.")
+
+
+def generate_word():
+    """
+    Doc here
+    """
+    return random.choice(get_words())
 
 
 def generate_hint(word_write, word_gen):
@@ -59,8 +65,8 @@ def generate_hint(word_write, word_gen):
     near_hints = []
     bad_hints = []
 
-    written_letters = list(word_write)
-    generated_letters = list(word_gen)
+    written_letters = list(word_write.lower())
+    generated_letters = list(word_gen.lower())
 
     # Creamos una copia de las letras generadas para marcar las ocurrencias que ya hemos utilizado
     used_indices = set()
@@ -68,7 +74,7 @@ def generate_hint(word_write, word_gen):
     for i, letter in enumerate(written_letters):
         if letter == generated_letters[i] and i not in used_indices:
             # La letra está en la posición correcta y no ha sido utilizada antes
-            good_hints.append({"word": letter, "position": i})
+            good_hints.append({"letter": letter, "position": i})
             used_indices.add(i)
 
     for i, letter_gen in enumerate(generated_letters):
@@ -78,7 +84,7 @@ def generate_hint(word_write, word_gen):
             if i != value and value not in used_indices:
                 # La letra está en la palabra generada, pero no en la posición correcta
                 # y no ha sido utilizada antes
-                near_hints.append({"word": written_letters[value], "position": value})
+                near_hints.append({"letter": written_letters[value], "position": value})
                 used_indices.add(value)
                 break
 
@@ -86,7 +92,7 @@ def generate_hint(word_write, word_gen):
         if i not in used_indices:
             # La letra está en la palabra generada, pero en una posición incorrecta
             # o no está en la palabra generada
-            bad_hints.append({"word": letter, "position": i})
+            bad_hints.append({"letter": letter, "position": i})
 
     hint = {"good": good_hints,
             "near": near_hints,

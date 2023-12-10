@@ -1,4 +1,4 @@
-from .utils import generate_word, generate_hint
+from .utils import generate_word, generate_hint, get_words
 
 
 class Automata:
@@ -21,6 +21,16 @@ class Automata:
         restart(): Resets the game to its initial state.
         update(symbol: str, msg=None) -> dict: Updates the game state based on the input symbol and an optional message.
     """
+
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        """
+        Singleton pattern implementation. Only one instance of the class can exist at a time.
+        """
+        if not cls._instance:
+            cls._instance = super(Automata, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
 
     def __init__(self):
         """
@@ -134,24 +144,25 @@ class Automata:
             if self.change_state(symbol) is False:
                 return {'result': f'transición no válida ({symbol}) para el estado ({self.current_state})'}
             self.word_gen = generate_word()
-            return {'result': {
-                'word': self.word_gen
-            }}
 
         if symbol == 'escribir':
             if self.change_state(symbol) is False:
                 return {'result': f'transición no válida ({symbol}) para el estado ({self.current_state})'}
             self.word_write = msg
-            if self.current_state in {'WIN', 'GAME_OVER'}:
+            if self.current_state == 'WIN':
                 return (f'el juego ha terminado en el estado {self.current_state}. No se pueden realizar más '
                         f'transiciones.')
             else:
                 return {'result': 'palabra leida'}
 
         if symbol == 'verificar':
+            # verificar si la palabra existe en el diccionario y no son letras aleatorias
+            if self.word_write.lower() not in get_words():
+                return {'result': 'INVALID_WORD'}
+
             if self.change_state(symbol) is False:
                 return {'result': f'transición no válida ({symbol}) para el estado ({self.current_state})'}
-            if self.word_write == self.word_gen:
+            if self.word_write.lower() == self.word_gen.lower():
                 self.change_state('correcto')
                 return {'result': 'WIN'}
             else:
@@ -160,9 +171,9 @@ class Automata:
 
             if self.life > 0:
                 self.change_state('quedan_vidas')
-                hint = generate_hint(self.word_write, self.word_gen)
+                hint = generate_hint(self.word_write.lower(), self.word_gen.lower())
                 self.change_state('')
-                if self.current_state in {'WIN', 'GAME_OVER'}:
+                if self.current_state == 'WIN':
                     return (f'el juego ha terminado en el estado {self.current_state}. No se pueden realizar más '
                             f'transiciones.')
                 else:

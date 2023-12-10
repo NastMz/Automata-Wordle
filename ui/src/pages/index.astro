@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import HelpModal from '../components/HelpModal.astro';
 import GameOverModal from "../components/GameOverModal.astro";
 import Keyboard from "../components/Keyboard.astro";
+import Toast from "../components/Toast.astro";
+import Loader from "../components/Loader.astro";
 ---
 <Layout title="Automata Wordle">
     <header class="flex justify-center items-center">
@@ -16,6 +18,7 @@ import Keyboard from "../components/Keyboard.astro";
             </button>
         </div>
     </header>
+    <Loader/>
     <HelpModal/>
     <GameOverModal
             title="¡Felicidades! Has ganado el juego Wordle"
@@ -40,7 +43,8 @@ import Keyboard from "../components/Keyboard.astro";
             ¡Sigue intentándolo!
         </p>
     </GameOverModal>
-    <main class="w-full flex flex-col items-center gap-20 pb-20">
+    <Toast/>
+    <main class="w-full flex flex-col items-center gap-10 pb-20">
         <section id="board" class="grid grid-cols-5 gap-2">
         </section>
         <Keyboard/>
@@ -126,10 +130,10 @@ import Keyboard from "../components/Keyboard.astro";
     let gameOver = false;
 
     /**
-     * Word to guess in the game.
-     * @type {string}
+     * Clues for the word to guess. Is set by the server.
+     * @type {{}}
      */
-    let word = "Ayuda";
+    let clues = {};
 
     /**
      * Game board element.
@@ -138,10 +142,85 @@ import Keyboard from "../components/Keyboard.astro";
     let gameBoard = document.getElementById("board");
 
     /**
+     * Keyboard enabled status.
+     * @type {boolean}
+     */
+    let keyboardEnabled = false;
+
+    let socket;
+
+    /**
      * Initialize the game board on window load.
      */
     window.onload = function () {
         initialize();
+
+        socket = io('http://127.0.0.1:5000/game');
+
+        // Start the game when the socket connects to the server
+        socket.on('connect', function () {
+            socket.emit('start', null);
+        });
+
+        // Reload the page when the socket disconnects from the server
+        socket.on('disconnect', function () {
+            window.location.reload();
+        });
+
+        socket.on('start', function (msg) {
+            let loader = document.getElementById('loader');
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+            keyboardEnabled = true;
+        })
+
+        // Verify the word when the user presses the enter key
+        socket.on('escribir', function (msg) {
+            socket.emit('verificar', null)
+        });
+
+        // Update the game state when the server sends the result of the word verification
+        socket.on('verificar', function (msg) {
+            // The word is invalid (not in the dictionary)
+            if (msg.result && msg.result === 'INVALID_WORD') {
+                showToast();
+                return;
+            }
+
+            // The user has run out of attempts and lost the game
+            if (msg.result && msg.result === 'GAME_OVER') {
+                update();
+                gameOver = true;
+                document.getElementById("answer").innerText = msg.answer;
+                setTimeout(() => {
+                    openModal("lose-modal", "lose-content");
+                }, 3000);
+                return;
+            }
+
+            // The user has guessed the word correctly and won the game
+            if (msg.result && msg.result === 'WIN') {
+                clues.good = getUserInput().split("").map((letter, index) => {
+                    return {
+                        letter: letter,
+                        position: index
+                    }
+                });
+
+                clues.near = [];
+
+                update();
+                gameOver = true;
+                setTimeout(() => {
+                    openModal("win-modal", "win-content");
+                }, 3000);
+                return;
+            }
+
+            // The user has guessed the word incorrectly and has to try again
+            clues = msg;
+            update();
+        });
     };
 
     /**
@@ -181,7 +260,7 @@ import Keyboard from "../components/Keyboard.astro";
     // Listen for key press
     document.addEventListener("keyup", (evt) => {
         // If the game is over, don't do anything.
-        if (gameOver) {
+        if (gameOver || !keyboardEnabled) {
             return;
         }
 
@@ -202,48 +281,54 @@ import Keyboard from "../components/Keyboard.astro";
         // If the key pressed is the backspace key, delete the letter in the current tile in the game board
         else if (evt.key === BACKSPACE_KEY) {
 
+            // If the current column is greater than 0 we can delete the letter in the current tile and move to the
+            // previous column in the game board
             if (currentCol > 0 && currentCol <= MAX_COLS) {
                 currentCol--;
             }
 
+            // Delete the letter in the current tile
             let currentTileId = getTileId(currentRow, currentCol);
             let currentTile = document.getElementById(currentTileId);
 
             currentTile.textContent = "";
 
         }
-        // If the key pressed is the enter key, update the game state and move to the next row in the game board (if possible)
+        // If the key pressed is the enter key, verify the word in the game board
         else if (evt.key === ENTER_KEY && currentCol === MAX_COLS) {
-            update();
-            currentRow++;
-            currentCol = 0;
-        }
-
-        // If the current row is the last row and the game is not over, the player has lost the game
-        if (!gameOver && currentRow === MAX_ROWS) {
-            gameOver = true;
-            setTimeout(() => {
-                document.getElementById("answer").innerText = word;
-
-                openModal("lose-modal", "lose-content");
-            }, 3000);
+            socket.emit('escribir', {word: getUserInput()});
         }
     });
+
+    /**
+     * Get the word in the game board.
+     * @returns {string} The word in the game board.
+     */
+    function getUserInput() {
+        let userInput = "";
+        for (let c = 0; c < MAX_COLS; c++) {
+            let currentTileId = getTileId(currentRow, c);
+            let currentTile = document.getElementById(currentTileId);
+
+            userInput += currentTile.innerText;
+        }
+
+        return userInput;
+    }
 
     /**
      * Update the game state.
      */
     function update() {
+        // Get all the buttons in the virtual keyboard to color them accordingly
         const allButtons = document.querySelectorAll('#keyboard div button'); // All buttons in the virtual keyboard
-
-        let correctAnswers = 0; // Number of correct answers
 
         // Check each tile in the current row for correctness and color it accordingly
         for (let c = 0; c < MAX_COLS; c++) {
             let currentTileId = getTileId(currentRow, c); // Get the ID of the current tile
             let currentTile = document.getElementById(currentTileId); // Get the current tile
 
-            let letter = currentTile.innerText.toUpperCase(); // Get the letter in the tile
+            let letter = currentTile.innerText.toLowerCase(); // Get the letter in the tile
 
             let parentTile = currentTile.parentElement; // Get the parent of the tile (the div) to add the color class
 
@@ -251,7 +336,7 @@ import Keyboard from "../components/Keyboard.astro";
 
             // Find the key in the keyboard that corresponds to the letter in the tile
             allButtons.forEach(button => {
-                if (button.textContent.toUpperCase() === letter) {
+                if (button.textContent.toLowerCase() === letter) {
                     key = button;
                 }
             });
@@ -264,10 +349,9 @@ import Keyboard from "../components/Keyboard.astro";
                 // Wait for the animation to finish before coloring the tile
                 setTimeout(() => {
                     // Is it the correct letter in the word in the correct position?
-                    if (word.toUpperCase()[c] === letter) {
+                    if (clues.good.some((good) => good.letter.toLowerCase() === letter)) {
                         let color = getColor("GOOD");
                         parentTile.classList.add(color);
-                        correctAnswers++;
 
                         if (key.classList.contains(getColor("CLUE"))) {
                             key.classList.remove(getColor("CLUE"))
@@ -278,7 +362,7 @@ import Keyboard from "../components/Keyboard.astro";
                         key.classList.add(color);
                     }
                     // Is a letter in the word but not in the correct position?
-                    else if (word.toUpperCase().includes(letter)) {
+                    else if (clues.near.some((clue) => clue.letter.toLowerCase() === letter)) {
                         let color = getColor("CLUE");
                         parentTile.classList.add(color);
                         if (!key.classList.contains(getColor("GOOD"))) {
@@ -293,18 +377,12 @@ import Keyboard from "../components/Keyboard.astro";
                             key.classList.add(color);
                         }
                     }
-
-                    // Check if the game is over (all letters in the word have been guessed correctly) and show the win modal
-                    if (correctAnswers === MAX_COLS) {
-                        gameOver = true;
-                        // We need to wait for the last tile to rotate before showing the modal
-                        setTimeout(() => {
-                            openModal("win-modal", "win-content");
-                        }, 100);
-                    }
                 }, 500);
             }, c * 500);
         }
+
+        currentRow++;
+        currentCol = 0;
     }
 
     /**
@@ -324,7 +402,7 @@ import Keyboard from "../components/Keyboard.astro";
     }
 
     /**
-     * Open a modal.
+     * Open a modal. (Is called when the user clicks the help button)
      * @param {string} idModal - The ID of the modal.
      * @param {string} idModalContent - The ID of the modal content.
      */
@@ -337,6 +415,20 @@ import Keyboard from "../components/Keyboard.astro";
         setTimeout(() => {
             modalContent.classList.replace("scale-0", "scale-100");
         }, 100);
+    }
+
+    let toast = document.getElementById('toast');
+
+    /**
+     * Show the toast message. (Is called when the user enters an invalid word)
+     */
+    function showToast() {
+        toast.classList.remove('hidden');
+        toast.classList.add('flex');
+        setTimeout(() => {
+            toast.classList.remove('flex');
+            toast.classList.add('hidden');
+        }, 1500);
     }
 
     // Event listeners for modals

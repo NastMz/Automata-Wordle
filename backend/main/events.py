@@ -1,4 +1,4 @@
-from backend.app import socketio
+from backend.main.websocket import socketio
 from flask_socketio import emit
 from ..core.automata import Automata
 
@@ -20,6 +20,7 @@ def handle_start_game(msg):
     Emits:
         'start' event: The result of the 'update' method, containing game information.
     """
+    automata.restart()
     result = automata.update('start')
     emit('start', result)
 
